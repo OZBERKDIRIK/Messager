@@ -8,10 +8,10 @@ public class SimpleMessageClient {
         String host = "localhost";
         int port = 12345;
 
+
         try (Socket socket = new Socket(host, port);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
             Scanner scanner = new Scanner(System.in);
             String userInput;
 
@@ -34,7 +34,7 @@ public class SimpleMessageClient {
                 }
             }
         } catch (IOException ex) {
-            System.out.println("Bağnatı Hatası ");
+            System.out.println("Bağlantı Hatası ");
         }
     }
 }

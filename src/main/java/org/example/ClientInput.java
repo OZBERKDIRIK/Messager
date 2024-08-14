@@ -9,24 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ClientInput extends ClientHandler implements Runnable {
-    private Socket socket;
-    private PrintWriter out;
-    private BufferedReader in;
+public class ClientInput extends ClientHandler  implements  Runnable {
 
-    public ClientInput(Socket socket) {
-        this.socket = socket;
+    ClientInput(Socket socket) throws IOException {
+        super(socket);
     }
 
     @Override
     public void run() {
         try {
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 System.out.println("Komut alındı : " + inputLine);
-                ReadUserCommand(userInput);
+                ReadUserCommand(inputLine);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,44 +34,47 @@ public class ClientInput extends ClientHandler implements Runnable {
         }
     }
 
-    private void ReadUserCommand(String userInput) {
-        String type = userInput[0].toLowerCase(new Locale("tr","TR"));
-        List<String> tokens = new ArrayList<>();
-        tokens.add(type);
+    public void ReadUserCommand(String userInput) {
+        String [] tokens =  userInput.split(" ",3);
+        String type = tokens[0].toLowerCase(new Locale("tr","TR"));
+
+        List<String> tokenList = new ArrayList<>();
+        tokenList.add(type);
 
         if (type.equals("read")) {
-            String messageID = userInput[1];
-            tokens.add(messageID);
-            handleRead(tokens);
+            String messageID = tokens[1];
+            tokenList.add(messageID);
+            handleRead(tokenList);
             return;
         }
         if (type.equals("list")) {
-            String messageFolderType = userInput[1];
-            tokens.add(messageFolderType);
-            handleList(tokens);
+            String messageFolderType = tokens[1];
+            tokenList.add(messageFolderType);
+            handleList(tokenList);
             return;
         }
         if (type.equals("send")) {
-            String recieve = userInput[1];
-            String topic = userInput[2];
-            String content = userInput.toString().substring(3, userInput.length);
-            tokens.add(recieve);
-            tokens.add(topic);
-            tokens.add(content);
-            handleSend(tokens);
+            String recieve = tokens[1];
+            String[] topicContent = tokens[2].split(" ",2);
+            String topic = topicContent[0];
+            String content = topicContent[1];
+            tokenList.add(recieve);
+            tokenList.add(topic);
+            tokenList.add(content);
+            handleSend(tokenList);
             return;
         }
         if (type.equals("auth")) {
-            String auth = userInput[1];
-            tokens.add(auth);
-            handleAuth(tokens);
+            String auth = tokens[1];
+            tokenList.add(auth);
+            handleAuth(tokenList);
             out.println(auth + "@demoMessager.com Sisteme Giriş Yaptı");
             return;
         }
         if (type.equals("register")) {
-            String email = userInput[1];
-            tokens.add(email);
-            handleRegister(tokens);
+            String email = tokens[1];
+            tokenList.add(email);
+            handleRegister(tokenList);
             return;
         }
         if(type.equals("quit")){

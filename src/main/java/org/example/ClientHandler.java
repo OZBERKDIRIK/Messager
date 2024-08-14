@@ -1,89 +1,79 @@
 package org.example;
-
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.BufferedReader;
-import java.io.PrintWriter;
-import java.lang.reflect.Type;
 import java.net.Socket;
 import java.io.*;
-import java.nio.file.Files;
 import java.util.*;
-
 class ClientHandler {
 
-    private Person person = new Person();
-
-
-    private Message message = new Message();
-
-    private PrintWriter out;
-    private BufferedReader in;
+    private Person person;
+    private Message message;
+    protected Socket socket;
+    protected BufferedReader in;
+    protected PrintWriter out;
+    ClientHandler (Socket socket) throws  IOException{
+        this.socket=socket;
+        out=new PrintWriter(socket.getOutputStream(),true);
+        in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.person = new Person();
+        this.message = new Message();
+    }
 
     public void handleQuit() {
-        out.println("QUİT SUCCESS");
-
+       out.println("QUİT SUCCESS");
     }
     public void handleRead(List<String> tokens) {
         String messageID = tokens.get(1);
-        List<Message> readMessage =message.read(FileOperation.allMessage);
+        List<Message> readMessage = message.read(FileOperation.allMessage);
         readMessage.forEach((readMsg -> {
-            if(readMsg.messageID.equals(messageID)){
-                out.println(message.gson.toJson(readMessage,Message.class));
+            if (readMsg.messageID.equals(messageID)) {
+                 out.println(message.gson.toJson(readMessage, Message.class));
             }
         }));
     }
 
-    public void handleList(List<String> tokens){
+    public void handleList(List<String> tokens) {
         String send = "Gönderilenler";
         String reiceve = "Gelenler";
-        List <Message> readMessage;
-        if(tokens.size()==2){
-            if(tokens.get(1).equals(send.toLowerCase(Locale.forLanguageTag("tr-TR")))){
-                readMessage= message.read(FileOperation.send);
-                out.println("GÖNDERİLENLER ------ \n" + message.gson.toJson(readMessage,List.class));
+        List<Message> readMessage;
+        if (tokens.size() == 2) {
+            if (tokens.get(1).equals(send.toLowerCase(Locale.forLanguageTag("tr-TR")))) {
+                readMessage = message.read(FileOperation.send);
+                out.println("GÖNDERİLENLER ------ \n" + message.gson.toJson(readMessage, List.class));
             }
-            if(tokens.get(1).equals(reiceve.toLowerCase(Locale.forLanguageTag("tr-TR")))){
-                readMessage= message.read(FileOperation.send);
-                out.println("GELENLER ------ \n" + message.gson.toJson(readMessage,List.class));
+            if (tokens.get(1).equals(reiceve.toLowerCase(Locale.forLanguageTag("tr-TR")))) {
+                readMessage = message.read(FileOperation.send);
+                out.println("GELENLER ------ \n" + message.gson.toJson(readMessage, List.class));
             }
         }
     }
 
 
-    public void handleSend(List<String> tokens){
-        if(tokens.size()==4){
+    public void handleSend(List<String> tokens) {
+        if (tokens.size() == 4) {
             message.setReciever(tokens.get(1));
             message.setSender(person.getAuthenticatedUser());
             message.setTopic(tokens.get(2));
             message.setContent(tokens.get(3));
             message.write(FileOperation.allMessage);
 
-           List<Person> personRead = person.read(FileOperation.auth);
+            List<Person> personRead = person.read(FileOperation.auth);
 
             personRead.forEach((prs -> {
-                if(prs.getAuthenticatedUser().equals(message.getSender()))
-                {
+                if (prs.getAuthenticatedUser().equals(message.getSender())) {
                     message.write(FileOperation.send);
                 }
-                if(prs.getAuthenticatedUser().equals(message.getReciever())){
+                if (prs.getAuthenticatedUser().equals(message.getReciever())) {
                     message.write(FileOperation.recieve);
                 }
             }));
-
-
             out.println("SEND SUCCESS");
 
-        }else{
+        } else {
             out.println("SEND FAILURE");
         }
     }
 
-
-
-    public void handleAuth(List<String> tokens){
-        if(tokens.size()==2) {
+    public void handleAuth(List<String> tokens) {
+        if (tokens.size() == 2) {
             person.setUsername(tokens.get(1));
             String email = person.getUsername();
             if ((person.getUserCredentials().contains(email))) {
@@ -93,14 +83,12 @@ class ClientHandler {
             } else {
                 out.println("AUTH FAILURE");
             }
-        }else{
+        } else {
             out.println("AUTH FAILURE");
         }
     }
-
-
-    public void handleRegister(List<String> tokens){
-        if(tokens.size()==2) {
+    public void handleRegister(List<String> tokens) {
+        if (tokens.size() == 2) {
             person.setUsername(tokens.get(1));
             if (!(person.getUsername().isEmpty())) {
                 person.setUserCredentials();
@@ -109,12 +97,14 @@ class ClientHandler {
             } else {
                 out.println("REGISTER FAILURE");
             }
-        }else{
+        } else {
             out.println("REGISTER FAILURE");
         }
     }
 
 }
+
+
 
 
 
