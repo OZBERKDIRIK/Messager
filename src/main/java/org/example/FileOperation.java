@@ -22,7 +22,7 @@ interface FileOperation {
     File send = new File(authenticateUser,"Gönderilenler.txt");
     File recieve = new File(authenticateUser , "Gelenler.txt");
 
-   public void write(File file);
+   public void write(File file) throws IOException;
 
    public Object read(File file);
 

@@ -1,8 +1,7 @@
 package org.example;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.Expose;
 import com.google.gson.stream.JsonReader;
 
 import java.io.*;
@@ -65,8 +64,8 @@ public class Message implements Serializable,FileOperation {
     @Override
     public void write(File file) {
         if(messageFile.exists()){
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(allMessage, true))){
-                String message = gson.toJson(Message.class);
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))){
+                String message = gson.toJson(new Message());
                 bw.write(message);
             } catch(IOException e){
                 System.out.println("Dosya yazma işlemi başarılı olamadı ...");
@@ -74,8 +73,8 @@ public class Message implements Serializable,FileOperation {
 
         }else{
             messageFile.mkdirs();
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(allMessage, true))){
-                String message = gson.toJson(Message.class);
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))){
+                String message = gson.toJson(new Message());
                 bw.write(message);
             } catch(IOException e){
                 System.out.println("Dosya yazma işlemi başarılı olamadı ...");
@@ -85,7 +84,7 @@ public class Message implements Serializable,FileOperation {
     @Override
     public List<Message> read(File file) {
         List<Message> message;
-        try(JsonReader reader = new JsonReader(new FileReader(allMessage))){
+        try(JsonReader reader = new JsonReader(new FileReader(file))){
             message= gson.fromJson(reader,Message.class);
             return message;
         }catch (IOException e){

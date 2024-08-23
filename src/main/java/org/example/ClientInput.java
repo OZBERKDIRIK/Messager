@@ -1,18 +1,17 @@
 package org.example;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ClientInput extends ClientHandler  implements  Runnable {
+public class ClientInput  extends  Runnable {
 
-    ClientInput(Socket socket) throws IOException {
+    ClientHandler handler1;
+    ClientInput(Socket socket, ClientHandler handler) throws IOException {
         super(socket);
+        handler1 = handler;
     }
 
     @Override
@@ -34,7 +33,7 @@ public class ClientInput extends ClientHandler  implements  Runnable {
         }
     }
 
-    public void ReadUserCommand(String userInput) {
+    public void ReadUserCommand(String userInput) throws IOException {
         String [] tokens =  userInput.split(" ",3);
         String type = tokens[0].toLowerCase(new Locale("tr","TR"));
 
@@ -44,7 +43,7 @@ public class ClientInput extends ClientHandler  implements  Runnable {
         if (type.equals("read")) {
             String messageID = tokens[1];
             tokenList.add(messageID);
-            handleRead(tokenList);
+            handler1.handleRead(tokenList);
             return;
         }
         if (type.equals("list")) {

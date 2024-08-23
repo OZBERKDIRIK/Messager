@@ -19,7 +19,7 @@ public class SimpleMessageServer {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Yeni bağlantı kabul edildi: " + clientSocket.getInetAddress());
-                threadPool.execute(new ClientInput(clientSocket));
+                threadPool.execute(new ClientInput(clientSocket, new ClientHandler()));
             }
         } catch (IOException e) {
             e.printStackTrace();

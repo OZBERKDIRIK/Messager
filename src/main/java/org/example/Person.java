@@ -1,24 +1,23 @@
 package org.example;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import java.io.*;
-import java.nio.Buffer;
+import java.lang.reflect.Type;
 import java.util.*;
 
-public class Person implements FileOperation{
+public class Person implements FileOperation {
     private String username;
 
     private String authenticatedUser = "";
 
-    private static Set<String> userCredentials = new HashSet<>();
-
+    private static List<String> userCredentials = new ArrayList<>();
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public String getUsername()
-    {
+    public String getUsername() {
         return username;
     }
 
@@ -32,53 +31,48 @@ public class Person implements FileOperation{
         }
     }
 
-    public Set<String> getUserCredentials() {
+    public static List<String> getUserCredentials() {
         return userCredentials;
     }
 
-    public void setUserCredentials() {
-            if (!(userCredentials.isEmpty() && userCredentials.contains(username))){
-                userCredentials.add(username);
-            }
-        }
+    public static void setUserCredentials(String credentials) {
+        userCredentials.add(credentials);
+    }
 
-    public String getAuthenticatedUser()
-    {
+    public String getAuthenticatedUser() {
         return authenticatedUser;
     }
-
     public void setAuthenticatedUser(String authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
-
     }
-
     @Override
-    public void write(File file) {
-        if(file.exists()){
-            try(BufferedWriter bf = new BufferedWriter(new FileWriter(file))){
-                String person = gson.toJson(Person.class);
-                bf.write(person);
-            }catch(IOException e){
-                System.out.println("Dosya yazılamadı ");
+    public void write(File file) throws IOException {
+        if (FileOperation.messager.exists()) {
+            if (!file.exists()) {
+                file.createNewFile();
             }
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+                    writer.write(Person.getUserCredentials().toString());
+                    writer.newLine();
+                } catch (IOException e) {
+                    System.out.println("Dosyaya yazma sırasında bir hata oluştu: " + e.getMessage());
+                }
         }
     }
     @Override
     public List<Person> read(File file) {
-        List<Person> person;
-        if(file.exists()){
-            try(JsonReader jsonReader = new JsonReader(new FileReader(file))){
-              person = gson.fromJson(jsonReader,Person.class);
-              return person;
-            }catch (IOException e){
-                System.out.println("Dosya okunamadı");
-                return null;
+        List<Person> personList = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+
             }
-        }else{
-            System.out.println("Okunacak Dosya bulunmadı");
-            return null;
+        } catch (IOException e) {
+            System.out.println("Dosyadan okuma sırasında bir hata oluştu: " + e.getMessage());
         }
+        return personList;
     }
+
 }
 
 

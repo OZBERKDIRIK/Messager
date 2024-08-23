@@ -9,23 +9,25 @@ class ClientHandler {
     protected Socket socket;
     protected BufferedReader in;
     protected PrintWriter out;
-    ClientHandler (Socket socket) throws  IOException{
-        this.socket=socket;
-        out=new PrintWriter(socket.getOutputStream(),true);
-        in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+    ClientHandler(Socket socket) throws IOException {
+        this.socket = socket;
+        out = new PrintWriter(socket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.person = new Person();
         this.message = new Message();
     }
 
     public void handleQuit() {
-       out.println("QUİT SUCCESS");
+        out.println("QUİT SUCCESS");
     }
+
     public void handleRead(List<String> tokens) {
         String messageID = tokens.get(1);
         List<Message> readMessage = message.read(FileOperation.allMessage);
         readMessage.forEach((readMsg -> {
             if (readMsg.messageID.equals(messageID)) {
-                 out.println(message.gson.toJson(readMessage, Message.class));
+                out.println(message.gson.toJson(readMessage, Message.class));
             }
         }));
     }
@@ -72,36 +74,56 @@ class ClientHandler {
         }
     }
 
-    public void handleAuth(List<String> tokens) {
+    public void handleAuth(List<String> tokens) throws IOException {
         if (tokens.size() == 2) {
             person.setUsername(tokens.get(1));
             String email = person.getUsername();
-            if ((person.getUserCredentials().contains(email))) {
+            if(FileOperation.auth.length()!=0) {
+                person.read(FileOperation.register).forEach((person1) -> {
+                    if (Person.getUserCredentials().contains(email)) {
+                        person.setAuthenticatedUser(email);
+                        try {
+                            person.write(FileOperation.auth);
+                        } catch (IOException e) {
+                            System.out.println("Giriş Dosyası Yazılamadı " +e.getMessage());
+                        }
+                    } else {
+                        out.println("AUTH FAILURE");
+                    }
+                });
+            }else{
                 person.setAuthenticatedUser(email);
                 person.write(FileOperation.auth);
-                out.println("AUTH SUCCESS");
-            } else {
-                out.println("AUTH FAILURE");
             }
         } else {
             out.println("AUTH FAILURE");
         }
     }
-    public void handleRegister(List<String> tokens) {
+
+    public void handleRegister(List<String> tokens) throws IOException {
         if (tokens.size() == 2) {
+            FileOperation.messager.mkdirs();
             person.setUsername(tokens.get(1));
-            if (!(person.getUsername().isEmpty())) {
-                person.setUserCredentials();
+            if (FileOperation.register.length()!=0) {
+                    if (!(Person.getUserCredentials().contains(person.getUsername()))) {
+                        Person.setUserCredentials(tokens.get(1));
+                        person.write(FileOperation.register);
+                        out.println("REGISTER SUCCSESS");
+                    } else {
+                        out.println("KULLANICI DAHA ONCE KAYIT OLMUSTUR");
+                    }
+
+            } else {
+                Person.setUserCredentials(tokens.get(1));
                 person.write(FileOperation.register);
                 out.println("REGISTER SUCCSESS");
-            } else {
-                out.println("REGISTER FAILURE");
             }
+
         } else {
             out.println("REGISTER FAILURE");
         }
-    }
 
+    }
 }
 
 
